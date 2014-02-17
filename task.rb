@@ -11,16 +11,16 @@ require 'twitter'
 
 desc "Deploy task with tweet"
 task :deploy_tweet do
-  Twitter.configure do |config|
-    config.consumer_key       = YOUR_CONSUMER_KEY
-    config.consumer_secret    = YOUR_CONSUMER_SECRET
-    config.oauth_token        = YOUR_OAUTH_TOKEN
-    config.oauth_token_secret = YOUR_OAUTH_TOKEN_SECRET
+  twitter = Twitter::REST::Client.new do |config|
+    config.consumer_key        = YOUR_CONSUMER_KEY
+    config.consumer_secret     = YOUR_CONSUMER_SECRET
+    config.access_token        = YOUR_ACCESS_TOKEN
+    config.access_token_secret = YOUR_ACCESS_TOKEN_SECRET
   end
 
   tweets = []
   FILENAME = 'atom.xml'
-  doc = Nokogiri::XML(open("_deploy/#{FILENAME}"))
+  doc = Nokogiri::XML(open("public/#{FILENAME}"))
   url = doc.at('id').text + FILENAME
   last_entry_id = Nokogiri::XML(open(url)).at('entry id').text
   entries = doc.css('entry')
@@ -38,6 +38,6 @@ task :deploy_tweet do
   tweets.each_with_index do |tweet, index|
     sleep(1) unless index == 0
     puts "Tweet: #{tweet}"
-    Twitter.update(tweet)
+    twitter.update(tweet)
   end
 end
